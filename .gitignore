@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.dylib
+*.pyd
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging / install
+*.whl
+.installed.cfg
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+share/python-wheels/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / local config
+.env
+.env.*
+*.pem
+credentials.json
+
+# Pipeline runtime outputs
+output/
+outputs/
+temp_outputs/
+temp_outputs_*/
+*.log
+logs/
+nohup.out
+
+# Evaluation artifacts under output dirs
+output/**/*.srt
+output/**/*.stm
+output/**/*.jsonl
+output/**/srt_list.txt
+output/**/raw_ref*.stm
+output/**/hyp*.stm
+output/**/hyp_*.json
+
+# Model caches (if downloaded locally)
+pretrained_models/
+model_hub/
+.cache/
+hf_cache/
+
+# NeMo / torch checkpoints
+*.ckpt
+*.pt
+*.pth
+*.onnx
+checkpoints/
