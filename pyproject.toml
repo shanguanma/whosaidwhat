@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "pybind11>=2.11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whosaidwhat"
+version = "0.1.0"
+description = "Integrating ASR, diarization, and alignment for who-said-what"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "deepmultilingualpunctuation",
+    "faster-whisper",
+    "kaldi-native-fbank",
+    "kaldiio",
+    "nltk",
+    "librosa",
+    "soundfile",
+    "packaging",
+    "pysrt",
+    "sentencepiece",
+    "textgrid",
+    "torch",
+    "torchaudio",
+    "transformers",
+    "uroman",
+    "whisper-normalizer",
+]
+
+[project.optional-dependencies]
+nemo = ["nemo_toolkit[asr]"]
+pyannote = ["pyannote.audio"]
+eval = ["meeteval"]
+moss = [
+    "transformers>=5.6.0,<6.0.0",
+    "safetensors>=0.6.2",
+    "av>=14.0",
+    "soxr>=0.5",
+    "numba>=0.61.0",
+]
+dev = ["pybind11"]
+
+[project.scripts]
+whosaidwhat-diarize = "whosaidwhat.pipe.diarize_with_asr_improved:main"
+whosaidwhat-diarize2 = "whosaidwhat.pipe.diarize_with_asr_improved2:main"
+whosaidwhat-gen-stm = "whosaidwhat.pipe.generate_hyp_stm_from_whisper_nemo_dia_output_ami_candor_fisher:main"
+whosaidwhat-gen-stm-alimeeting = "whosaidwhat.pipe.generate_hyp_stm_from_whisper_nemo_dia_output_for_alimeeting:main"
+fireredvad = "whosaidwhat.pipe.fireredvad.bin.fireredvad_cli:main"
+whosaidwhat-moss-infer = "whosaidwhat.e2e.moss_transcribe_diarize.infer:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["whosaidwhat*"]
+
+[tool.setuptools.package-data]
+"whosaidwhat.pipe.ctc_forced_aligner" = ["punctuations.lst"]
+"whosaidwhat.pipe.diarization.msdd" = ["diar_infer_telephonic.yaml"]
+
+[[tool.setuptools.ext-modules]]
+name = "whosaidwhat.pipe.ctc_forced_aligner.ctc_forced_aligner"
+sources = ["src/whosaidwhat/pipe/ctc_forced_aligner/forced_align_impl.cpp"]

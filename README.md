@@ -2,6 +2,11 @@
 
 Integrating ASR, speaker diarization, and forced alignment for the **who said what** task.
 
+Two workflows are supported:
+
+- **Modular pipeline** (`src/whosaidwhat/pipe/`): ASR + diarization + CTC alignment
+- **End-to-end model** (`src/whosaidwhat/e2e/moss_transcribe_diarize/`): [MOSS-Transcribe-Diarize](https://github.com/shanguanma/MOSS-Transcribe-Diarize) single-pass transcription + diarization
+
 ## Pipeline
 
 ```
@@ -16,7 +21,8 @@ Audio (WAV)
 ## Install
 
 ```bash
-pip install -e ".[nemo,eval]"
+pip install -e ".[nemo,eval]"      # modular pipeline
+pip install -e ".[moss]"           # MOSS-Transcribe-Diarize e2e inference
 ```
 
 Core dependencies are in `pyproject.toml`. NeMo is required for diarization; `meeteval` is only needed for scoring.
@@ -77,6 +83,53 @@ python -m whosaidwhat.pipe.generate_hyp_stm_from_whisper_nemo_dia_output_ami_can
   /path/to/output/srt_list.txt /path/to/output/hyp.stm
 ```
 
+## MOSS-Transcribe-Diarize (e2e)
+
+Single-model inference for long-form multi-speaker audio. Output format:
+
+```
+[start_time][Sxx]transcribed speech[end_time]
+```
+
+Install MOSS dependencies, then run:
+
+```bash
+pip install -e ".[moss]"
+
+export MODEL_ID=OpenMOSS-Team/MOSS-Transcribe-Diarize   # or local model path
+export AUDIO_PATH=/path/to/audio.wav
+export OUTPUT_DIR=/path/to/output/moss
+
+bash examples/run_moss_transcribe_diarize.sh
+```
+
+Or invoke directly:
+
+```bash
+python -m whosaidwhat.e2e.moss_transcribe_diarize.infer \
+  --model "$MODEL_ID" \
+  --audio "$AUDIO_PATH" \
+  --output-dir "$OUTPUT_DIR" \
+  --max-new-tokens 2048 \
+  --export-srt
+```
+
+For long audio, increase `--max-new-tokens` (e.g. `65536`). Optional hotwords can be appended to `--prompt`.
+
+Python API:
+
+```python
+from whosaidwhat.e2e.moss_transcribe_diarize import parse_transcript
+from whosaidwhat.e2e.moss_transcribe_diarize.infer import MossTranscriber
+
+transcriber = MossTranscriber("OpenMOSS-Team/MOSS-Transcribe-Diarize")
+result = transcriber.transcribe("audio.wav", max_new_tokens=2048)
+for seg in parse_transcript(result.text):
+    print(seg.start, seg.end, seg.speaker, seg.text)
+```
+
+Requires Transformers 5.x and a CUDA GPU for best performance. vLLM / web app serving are not included in this repo.
+
 ## Project layout
 
 ```
@@ -90,10 +143,16 @@ src/whosaidwhat/pipe/
 ├── diarization/                   # NeMo MSDD diarizer
 ├── fireredasr/                    # FireRedASR v1 + VAD
 └── fireredasr2/                   # FireRedASR2
+src/whosaidwhat/e2e/moss_transcribe_diarize/  # MOSS-Transcribe-Diarize (HF inference only)
+├── infer.py                       # CLI + MossTranscriber
+├── inference_utils.py
+├── transcript_parser.py
+└── subtitle/                      # SRT/JSON export helpers
 examples/
-└── run_pipe.sh                    # full benchmark-style workflow
+├── run_pipe.sh                    # modular pipeline benchmark workflow
+└── run_moss_transcribe_diarize.sh # MOSS e2e inference example
 ```
 
 ## Credits
 
-Derived from [whisper-diarization](https://github.com/MahmoudAshraf97/whisper-diarization), FireRedASR, NeMo Sortformer, and MMS forced aligner.
+Derived from [whisper-diarization](https://github.com/MahmoudAshraf97/whisper-diarization), FireRedASR, NeMo Sortformer, MMS forced aligner, and [MOSS-Transcribe-Diarize](https://github.com/shanguanma/MOSS-Transcribe-Diarize).
